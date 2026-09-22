@@ -1,12 +1,13 @@
 # Skram Vault
 
-A git-backed folder of markdown that you and your coding agents share: **lore**
-(hard-won facts that are not in the code), **specs**, and **tickets**. One
-command, `skram-vault`, reads and writes it, and one MCP server hands the same
-tools to Claude Code. Every write is a git commit, so the vault is history you
-can review, sync, and roll back.
+A git-backed folder of markdown you and your agents share: lore (what you
+learned the hard way), specs, and tickets.
 
-You need only this binary. It stands alone: no other Skram tool has to be
+One command, `skram-vault`, reads and writes it, and one MCP server hands the
+same tools to Claude Code. Every write is a git commit, so the vault is
+history you can review, sync, and roll back.
+
+You need only this binary. It stands alone: no other Skram product has to be
 installed, and nothing here assumes you have seen one.
 
 ```
@@ -19,6 +20,18 @@ my-vault/                  a git repo
     some-topic.md          a topic: frontmatter + markdown body
     specs/  tickets/       specs and tickets for this namespace
 ```
+
+## Why not Beads, why not memory
+
+Beads is the better issue tracker for agents on the axes a stranger compares
+first: docs, an id scheme, a merge story. A team that already has an issue tracker should keep it. Skram Vault's claim
+is the combination: one namespace holds what was learned (lore), what was
+decided (specs), and what is left (tickets), outside every repo it serves,
+the same on every machine, readable by any agent through one MCP server.
+
+It is not your editor's built-in memory either. Claude Code's auto-memory is
+per machine and per repo; a vault is shared across both, and it lives in a
+repo you own, not inside a tool's own storage.
 
 ## 1. Install
 
@@ -236,6 +249,9 @@ Point it at a different remote or branch with
 
 ## More
 
+Everything below, and anything added later, is indexed at
+[docs/](docs/README.md).
+
 - [The shape of a vault](docs/vault-shape.md): the layout, namespaces, the
   frontmatter of topics, specs, and tickets, the frontier, history and sync.
 - [The MCP server and agent files](docs/mcp.md): registering it in Claude Code
@@ -243,6 +259,9 @@ Point it at a different remote or branch with
   and how Matt Pocock's skills drive the vault.
 - [Let an agent set it up](docs/agent-setup.md): a prompt to paste into your
   coding agent that does sections 1 to 4 with you, asking before it writes.
+- [Troubleshooting sync](docs/troubleshooting.md): a conflict in a generated
+  index versus one in a topic, spec, or ticket, a write refused mid-merge,
+  and what `doctor` does and does not catch.
 
 ## Issues
 

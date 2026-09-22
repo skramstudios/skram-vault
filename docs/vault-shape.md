@@ -52,6 +52,39 @@ vault:
       uses: [platform]     # reads, search, and indexes in my-app also cover platform; writes never do
 ```
 
+## The `vault:` block
+
+Everything `skram-vault` reads for itself is under `vault:` in
+`~/.config/skram/config.yaml`, beside the `repos:` block that says which
+namespaces apply in which checkout (README §3). Only `path` is required.
+Where a key has a default it is the value shown, so omitting the key behaves
+the same way; the keys that have no default say what happens when they are
+left out.
+
+```yaml
+vault:
+  path: ~/vault                  # required; the vault's git repo (~ expanded, then must be absolute)
+  namespaces:
+    my-app:                      # one entry per namespace you want to configure
+      uses: [platform]           # namespaces this one also reads from
+  lore:
+    statuses: [Confirmed, Explored, In-progress, Skeleton, Parked]
+    template: ~/vault/topic.md.tmpl   # unset: the built-in new-topic template
+    decisions: decisions         # the topic id `lore decide` appends to
+    index_name: lore.md          # the generated per-namespace index (vault.md is reserved)
+  specs:
+    statuses: [draft, ready, implemented, superseded]
+  tickets:
+    statuses: [needs-triage, needs-info, ready-for-agent, ready-for-human, in-progress, done, wontfix]
+  sync:
+    remote: origin               # the vault's git remote
+    branch: main                 # unset: whatever branch the vault is on
+```
+
+`specs:` and `tickets:` turn those kinds on by being present at all: `specs:
+{}` is enough, and without the key there are no `spec` verbs, no `spec_*`
+tools, and no spec resources. `lore` is always on.
+
 ## Lore topics
 
 What you learned the hard way and the code does not say: why the retry count
@@ -110,6 +143,13 @@ updated: 2026-01-01
 ## Further notes
 ```
 
+```bash
+skram-vault spec new my-app "Checkout rewrite"      # create one; prints the id it allocated
+skram-vault spec list my-app                        # every spec here, with its status
+skram-vault spec show my-app S-1                    # the file, plus its recent history
+skram-vault spec set my-app S-1 --status ready      # move it along the statuses above
+```
+
 ## Tickets
 
 What is left to do. Ids are `T-<n>` per namespace; the file is
@@ -146,7 +186,9 @@ start of a session:
 
 ```bash
 skram-vault ticket list my-app --frontier            # this namespace
+skram-vault ticket list my-app --frontier --spec S-3 # one spec's own frontier
 skram-vault ticket list --all --frontier             # every namespace
+skram-vault ticket show my-app T-1                   # the file, plus its recent history
 skram-vault ticket set my-app T-1 --claim            # first write of the session
 skram-vault ticket close my-app T-1 --resolution "totals computed in /cart, clients read them"
 ```
@@ -154,7 +196,10 @@ skram-vault ticket close my-app T-1 --resolution "totals computed in /cart, clie
 ## History, sync, and sharing
 
 - Every write is one commit whose author is the detected actor, so `git log`
-  in the vault is the audit trail and `git revert` is the undo.
+  in the vault is the audit trail and `git revert` is the undo. The actor is
+  `$SKRAM_ACTOR` when you set it, otherwise `claude-code` or `cursor` when the
+  write came from one of those, otherwise `$USER` — so a commit says which
+  agent, or which person, made it.
 - `skram-vault sync` is `git pull --rebase` then `git push`. Nothing else
   pushes. It commits stale generated indexes itself and stops if a topic,
   spec, or ticket has uncommitted hand edits.
@@ -163,3 +208,6 @@ skram-vault ticket close my-app T-1 --resolution "totals computed in /cart, clie
   with a team, do the same with a repo the team can push to.
 - `skram-vault lint` checks every topic, spec, ticket, and index;
   `skram-vault regen` rewrites the indexes after hand edits.
+  `skram-vault lore lint` and `skram-vault lore regen` do the same for lore
+  alone, and `skram-vault lore index` and `skram-vault lore sync` are the
+  same commands as `skram-vault index` and `skram-vault sync`.

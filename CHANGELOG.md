@@ -3,6 +3,24 @@
 What changed in each skram-vault release, for someone running the binary.
 Versions follow semver.
 
+## [0.3.0] — 2026-09-21
+
+- Documentation, in `docs/`: an index (`docs/README.md`), and
+  `docs/vault-shape.md` now covers every `vault:` config key with its default,
+  the `spec` and `ticket show` commands, how the `lore` subcommands relate to
+  the root ones, and how the commit author is chosen (`SKRAM_ACTOR`). Every
+  command you can see, every `SKRAM_*` variable, and every config key is in
+  the docs; a release cannot be tagged otherwise.
+- `docs/troubleshooting.md`: what to do when a sync merge conflicts in a
+  generated index or in a topic, spec, or ticket, why a write is refused
+  mid-merge, and what `doctor` and `lint` do and do not catch.
+- `skram-vault --help` opens with the same sentence as the README.
+- `ticket list --frontier --spec S-n` (and the `ticket_list` tool with both)
+  now lists that spec's own frontier instead of the whole namespace's.
+  `--all` with `--spec` or `--status` is refused instead of silently ignoring
+  them.
+- The release page on GitHub shows its notes.
+
 ## [0.2.1] — 2026-09-21
 
 First public release.
