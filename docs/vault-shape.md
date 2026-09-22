@@ -200,9 +200,20 @@ skram-vault ticket close my-app T-1 --resolution "totals computed in /cart, clie
   `$SKRAM_ACTOR` when you set it, otherwise `claude-code` or `cursor` when the
   write came from one of those, otherwise `$USER` — so a commit says which
   agent, or which person, made it.
-- `skram-vault sync` is `git pull --rebase` then `git push`. Nothing else
-  pushes. It commits stale generated indexes itself and stops if a topic,
-  spec, or ticket has uncommitted hand edits.
+- A write (of lore, a spec, or a ticket) syncs the remote around itself: it
+  pulls the remote current before it allocates an id or commits, and pushes the
+  commit after — so two machines writing to one shared vault never hand out the
+  same `T-<n>` or `S-<n>`. The sync is best-effort: if the remote is unreachable
+  it warns and still commits locally (an offline write beats no write), and the
+  next write or `skram-vault sync` reconciles it. Pass `--no-sync` (or set
+  `SKRAM_VAULT_SYNC=0`) to turn it off for the offline or airgapped case.
+- `skram-vault sync` is `git pull --rebase` then `git push`, the explicit form
+  of what a write does around itself. It commits stale generated indexes itself
+  and stops if a topic, spec, or ticket has uncommitted hand edits. A
+  `.vault-ids.json` conflict — two machines that each allocated an id before
+  syncing — it resolves to the higher counter rather than asking for a hand
+  merge, and `skram-vault lint` reports a `duplicate-id` if two files ever share
+  one id.
 - To share a vault between your machines, give it a private remote and clone
   it on each; point each machine's `vault.path` at its clone. To share one
   with a team, do the same with a repo the team can push to.

@@ -49,29 +49,39 @@ you at that point.
 refuses a partial commit while a merge is unresolved. If you stop partway
 through the hand resolution above (you ran `git merge` but never finished
 it, or a merge conflict came from something other than `sync`), the next
-`skram-vault lore write` (or `spec`/`ticket` write) fails with git's own
-error, not a friendlier one:
+write — a `skram-vault lore write`, or a `spec`/`ticket new` or `set` — is
+refused with an error that says how to get out of the state:
 
 ```
-Error: git commit: fatal: cannot do a partial commit during a merge.
+Error: vault: a git merge is in progress in ~/vault; finish it (resolve the
+conflicts, git add, git commit) or abort it (git -C ~/vault merge --abort)
+before writing
 ```
 
-Finish the merge (`git add` the resolved paths, then `git commit`) or give
-up on it (`git merge --abort`) before writing again. `skram-vault doctor`
-does not detect this state; see below.
+Do exactly that — finish the merge (or rebase) or abort it — and the write
+goes through. `skram-vault doctor` also reports this state now; see below.
 
 ## What `doctor` and `lint` do, and do not, catch
 
 `skram-vault doctor` and `skram-vault lint` check the vault's *content*:
 frontmatter, statuses, links, and whether the generated indexes are current.
-They do not look at git's own state. A vault left mid-merge, or
-one with `<<<<<<<` conflict markers sitting in a topic's body, still reports
-`[ok]` from `doctor` and `ok` from `lint`: the frontmatter above the
-markers parses fine, and nothing walks the body looking for them. A vault
-that has diverged from its remote (commits on both sides, sync not yet run)
-reports the same way: `doctor` has no opinion on sync state at all.
+On top of that they now catch the two ways an unfinished merge hides in a
+vault:
 
-The one place any of this shows is `git status` run inside the vault
-directory, and the error text `sync` or a write command returns. When
-something about a vault looks wrong and `doctor` says everything is fine,
-check `git status` in the vault next.
+- **Conflict markers in a body.** `lint` (and `doctor`, which runs the same
+  lint) scans every `.md` file for a `<<<<<<<`, `>>>>>>>`, or `|||||||`
+  conflict-marker line and reports it — the frontmatter above the markers
+  still parses, and a conflicted index only reads as stale, so nothing else
+  would. (The `=======` separator is not matched on its own: seven `=` is
+  also a Markdown heading underline. Every real conflict carries a `<<<<<<<`
+  anyway.)
+- **A merge or rebase in progress.** `doctor` reports a paused merge or
+  rebase as an issue, because writes fail until it is finished or aborted. It
+  also notes, as `[--]` information, when the vault is ahead of, behind, or
+  diverged from its remote *as of the last fetch* — `doctor` does no network
+  of its own, so run `sync` to reconcile it, and run `git fetch` first if you
+  want the count to be current.
+
+`git status` inside the vault directory remains the ground truth for git's
+own state, and is worth a look whenever something seems off that `doctor`
+and `lint` both call clean.

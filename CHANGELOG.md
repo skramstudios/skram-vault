@@ -3,6 +3,22 @@
 What changed in each skram-vault release, for someone running the binary.
 Versions follow semver.
 
+## [0.4.0] — 2026-09-22
+
+- Every write (lore, spec, ticket) syncs with the vault's remote: it pulls
+  before it allocates an id or commits and pushes after, so two machines
+  writing to one shared vault no longer hand out the same `T-<n>` or `S-<n>`.
+  An unreachable remote warns and the write still commits locally.
+  `--no-sync` (or `SKRAM_VAULT_SYNC=0`) turns it off.
+- `skram-vault lint` and `doctor` report `duplicate-id` when two files in one
+  namespace claim the same id, and a sync merge that conflicts on
+  `.vault-ids.json` keeps the higher counter.
+- `skram-vault doctor` reports a vault left mid-merge or mid-rebase as a
+  problem, and ahead, behind, or diverged from its remote as a note. `lint`
+  and `doctor` report a git conflict marker left in a file. A write on a
+  vault mid-merge says how to finish or abort it. Before this, all of these
+  reported ok.
+
 ## [0.3.0] — 2026-09-21
 
 - Documentation, in `docs/`: an index (`docs/README.md`), and
