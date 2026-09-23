@@ -84,6 +84,62 @@ documentation says a `CLAUDE.local.md` makes it stop reading `AGENTS.md`
 there. Set Claude Code's *Project instructions* setting to
 `claude-md-and-agents-md` to keep both.
 
+## From Claude Code's memory
+
+Claude Code keeps its own per-machine memory per checkout (its durable
+`feedback` and `reference` entries are exactly the kind of thing lore is
+for). `agent import-memory` finds it, reports what it would promote, and —
+on `--yes`, or a terminal "y" to the prompt — promotes it:
+
+```bash
+skram-vault agent import-memory                        # dry run: report only, write nothing
+skram-vault agent import-memory --here --yes           # promote the checkout you are in without asking
+skram-vault agent import-memory --here --yes --prune   # …and delete what it promoted
+```
+
+The default is a dry run: it prints exactly what it would promote and writes
+nothing. Standing at a terminal with no `--yes`, it then asks; an empty
+answer or "y"/"yes" writes, anything else does not. `--yes` writes without
+asking, terminal or not. Without `--yes`, only a terminal prompts: piped
+stdin writes nothing, and a run that cannot write does not sync the vault's
+remote either.
+
+Selection matches `install-rules`, worktrees included: a linked worktree
+resolves to its main checkout's memory, so the two are one import, visited
+once. The report lists, per checkout, what it would promote, what already
+conflicts with a topic of the same id, and what it would leave behind (a
+handoff note, an untyped entry, an invalid name, or an unreadable file whose
+frontmatter does not parse, listed with its error; none of these fails the
+run). Two memories that resolve to the same id in one run, from one
+checkout or two, promote the first and report the rest as conflicts.
+`--namespace` overrides the target namespace; `--memory-dir` overrides the
+memory lookup for one checkout, so it needs `--here`. `--json` emits the same report as one document, carrying the commit(s) once
+`--yes` (or an accepted prompt) has written.
+
+Every promoted memory of one run lands in one attributed vault commit per
+namespace the run touches — one commit for the whole run in the usual case,
+every visited checkout sharing a namespace; a sweep that spans several
+namespaces lands one commit per namespace instead. Run the same import on a
+second machine after `skram-vault sync`, and the two machines' memories meet
+in one namespace: a memory whose id is already a topic there is reported as
+a conflict and never written or merged, so the second import surfaces
+duplicates for you to merge by hand instead of silently overwriting them.
+
+Memory files are left in place unless `--prune` is also passed: opt-in,
+never implied, and only meaningful together with a write, it deletes — once
+a namespace's commit succeeds — every memory file that commit promoted and
+that file's line in the memory directory's own index, MEMORY.md, leaving
+every other memory file and every other index line untouched. Without a
+write (a dry run, or a declined or piped prompt), `--prune` deletes nothing
+and the report lists what it would remove instead; a failed commit prunes
+nothing either. The report and `--json` both gain a `pruned` list.
+
+`skram-vault doctor` adds a `[--]` note, per checkout, when its memory holds
+a typed `feedback` or `reference` entry not yet promoted to a topic in the
+target namespace, ending with the `agent import-memory --here` line to run.
+A checkout with no memory directory gets no note, and the note never changes
+`doctor`'s exit code — it is a pointer, not a problem.
+
 ## With Matt Pocock's skills
 
 [mattpocock/skills](https://github.com/mattpocock/skills) read

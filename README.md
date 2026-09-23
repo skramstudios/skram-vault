@@ -29,9 +29,15 @@ is the combination: one namespace holds what was learned (lore), what was
 decided (specs), and what is left (tickets), outside every repo it serves,
 the same on every machine, readable by any agent through one MCP server.
 
-It is not your editor's built-in memory either. Claude Code's auto-memory is
-per machine and per repo; a vault is shared across both, and it lives in a
-repo you own, not inside a tool's own storage.
+It is not your editor's built-in memory either. Claude Code's own memory is a
+per-machine, per-repo record of what an agent noticed in a session — some of
+it durable (a rule, a gotcha, a fact worth keeping), some of it a handoff
+note for the next session. Lore is where the durable half graduates to:
+`agent import-memory` promotes it into topics any agent can read, on any
+machine, through the vault's MCP server — including a sub-agent, which never
+sees memory at all. Claude Code still keeps memory for what lore was never
+meant to hold, the per-machine handoff from one session to the next, and
+still writes it itself, per session, exactly as it always has.
 
 ## 1. Install
 
@@ -149,6 +155,11 @@ since been removed is skipped without a note.
 1. A checkout whose entry names no namespace is not visited: nothing is written
 there and nothing is removed.
 
+The section also draws the line between lore and memory: durable facts,
+rules, gotchas, and references go to lore; memory stays for per-machine
+session handoffs. To promote what memory is already holding, see
+[From Claude Code's memory](docs/mcp.md#from-claude-codes-memory).
+
 `AGENTS.local.md` may be shared with another tool that keeps its own section in
 it. `skram-vault` only ever reads or replaces the section under its own
 heading, and `--check` ignores every other section, so the two can run in
@@ -241,6 +252,7 @@ reads; any other keys you add pass through untouched.
 | `skram-vault mcp` | the MCP server |
 | `skram-vault doctor` | report the vault, its `repos:` bindings, the MCP registration, and each checkout's agent files; exit 1 on any `[!!]` |
 | `skram-vault agent install-rules` | write the vault's machine-local agent files into each covered checkout; `--check` verifies them |
+| `skram-vault agent import-memory` | promote a checkout's durable Claude Code memories into lore; `--prune` deletes what it promoted |
 
 Every read command takes `--json`. Every write is one commit in the vault, so
 `git log` in the vault directory is the audit trail. Generated indexes carry a

@@ -3,6 +3,24 @@
 What changed in each skram-vault release, for someone running the binary.
 Versions follow semver.
 
+## [0.6.0] — 2026-09-23
+
+- `skram-vault agent import-memory` promotes the durable half of Claude
+  Code's per-checkout memory (`feedback` and `reference` memories) into lore
+  topics. It is a dry run by default: it reports what it would promote, what
+  it leaves alone and why, and any id that already names a topic, which is
+  reported as a conflict and never overwritten. `--yes`, or answering the
+  prompt at a terminal, writes one commit per namespace; `--prune` then
+  deletes the memory files that commit promoted and their `MEMORY.md` lines.
+- `skram-vault doctor` notes a checkout whose memory holds durable memories
+  not yet in lore. The note is informational and never changes the exit code.
+- The Knowledge vault section `agent install-rules` writes gains a line
+  sending durable facts to lore rather than editor memory. Existing checkouts
+  read as stale under `--check` and `doctor` until `install-rules` runs there
+  again.
+- `agent install-rules --here` works from a linked worktree of a checkout
+  whose `repos:` entry matches by `paths:` alone.
+
 ## [0.5.0] — 2026-09-22
 
 - `skram-vault agent install-rules` (and `--check` and `doctor`) also covers
