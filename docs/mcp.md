@@ -74,6 +74,11 @@ It writes machine-local files only:
 - those paths in `.git/info/exclude`, so `git status` stays clean and nothing
   reaches the repo's history. `.gitignore` is never touched.
 
+A checkout's linked worktrees (`git worktree add`, or a task-lane checkout
+opened beside it) are covered the same way as the checkout itself, so a fresh
+worktree gets the section too; a worktree whose directory has since been
+removed is skipped without a note.
+
 **If the checkout relies on `AGENTS.md` and has no `CLAUDE.md`:** Claude Code's
 documentation says a `CLAUDE.local.md` makes it stop reading `AGENTS.md`
 there. Set Claude Code's *Project instructions* setting to

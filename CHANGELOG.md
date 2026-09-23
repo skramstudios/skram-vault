@@ -3,6 +3,14 @@
 What changed in each skram-vault release, for someone running the binary.
 Versions follow semver.
 
+## [0.5.0] — 2026-09-22
+
+- `skram-vault agent install-rules` (and `--check` and `doctor`) also covers
+  each checkout's linked worktrees: a `git worktree add` beside a covered
+  checkout gets the Knowledge vault section on the next run, with the same
+  namespaces as the checkout it came from. A worktree whose directory is
+  gone is skipped.
+
 ## [0.4.0] — 2026-09-22
 
 - Every write (lore, spec, ticket) syncs with the vault's remote: it pulls

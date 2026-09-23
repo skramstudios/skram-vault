@@ -139,6 +139,11 @@ machine-local files only, and never anything you would commit:
 - their lines in the repo's `.git/info/exclude`, so none of it shows in
   `git status`.
 
+A checkout's linked worktrees are covered the same way as the checkout
+itself, so a fresh `git worktree add` (or a task-lane checkout opened beside
+it) gets the section on the next `install-rules`; one whose directory has
+since been removed is skipped without a note.
+
 `--repos a,b` narrows to those entries and `--here` to the checkout you are in.
 `--check` writes nothing, reports anything missing, stale, or edited, and exits
 1. A checkout whose entry names no namespace is not visited: nothing is written
