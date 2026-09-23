@@ -33,11 +33,12 @@ It is not your editor's built-in memory either. Claude Code's own memory is a
 per-machine, per-repo record of what an agent noticed in a session — some of
 it durable (a rule, a gotcha, a fact worth keeping), some of it a handoff
 note for the next session. Lore is where the durable half graduates to:
-`agent import-memory` promotes it into topics any agent can read, on any
-machine, through the vault's MCP server — including a sub-agent, which never
-sees memory at all. Claude Code still keeps memory for what lore was never
-meant to hold, the per-machine handoff from one session to the next, and
-still writes it itself, per session, exactly as it always has.
+`agent promote-memory` lists a checkout's memories and promotes the ones you
+name into topics any agent can read, on any machine, through the vault's
+MCP server — including a sub-agent, which never sees memory at all. Claude
+Code still keeps memory for what lore was never meant to hold, the
+per-machine handoff from one session to the next, and still writes it
+itself, per session, exactly as it always has.
 
 ## 1. Install
 
@@ -252,7 +253,7 @@ reads; any other keys you add pass through untouched.
 | `skram-vault mcp` | the MCP server |
 | `skram-vault doctor` | report the vault, its `repos:` bindings, the MCP registration, and each checkout's agent files; exit 1 on any `[!!]` |
 | `skram-vault agent install-rules` | write the vault's machine-local agent files into each covered checkout; `--check` verifies them |
-| `skram-vault agent import-memory` | promote a checkout's durable Claude Code memories into lore; `--prune` deletes what it promoted |
+| `skram-vault agent promote-memory [name...]` | list a checkout's Claude Code memories and which are already in lore; with names (and `--here`), promote exactly those; `--prune` deletes what it promoted |
 
 Every read command takes `--json`. Every write is one commit in the vault, so
 `git log` in the vault directory is the audit trail. Generated indexes carry a

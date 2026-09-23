@@ -3,6 +3,37 @@
 What changed in each skram-vault release, for someone running the binary.
 Versions follow semver.
 
+## [Unreleased]
+
+## [0.7.0] — 2026-09-23
+
+- **Breaking:** `skram-vault agent import-memory` is now
+  `skram-vault agent promote-memory`, and it no longer promotes memories in
+  bulk by their type label. Run without names, it only lists each memory
+  with its type label, its summary, and `IN LORE`: where a lore topic with
+  the same id already exists, in any namespace. It never writes. `--json`
+  gives the same listing as one document. To promote, name the memories:
+  `promote-memory --here <name>... [--yes] [--prune]` promotes exactly
+  those, whatever their type. A named memory that is already in lore
+  anywhere is refused and the existing topic is named; the other names
+  still go ahead. `--yes` or `--prune` without names is now an error that
+  says what to do. `import-memory` still works for this release: it prints
+  `import-memory is now promote-memory` and runs.
+- Memory files with an unquoted `": "` in their description (the shape
+  Claude Code writes, such as "React 19 replaces javascript: hrefs …") are
+  now read instead of reported "unreadable": when strict parsing fails,
+  `promote-memory` falls back to reading the name, description and type
+  directly. A file whose name still cannot be recovered stays unreadable.
+- `skram-vault doctor` no longer notes a checkout's unpromoted memories.
+  Deciding what to promote is now entirely `promote-memory`'s job.
+- `promote-memory`'s listing now hints when a memory's id is close to, but
+  not exactly, an existing lore topic — for example
+  `react19-javascript-href-blocked` next to
+  `shared/react19-blocks-javascript-href`. The `IN LORE` column shows the
+  best match as `<namespace>/<id>?   (similar id)`, and `--json` adds
+  `similar: ["<namespace>/<id>", ...]` to the memory. This is informational
+  only: naming a memory with a similar id still promotes it.
+
 ## [0.6.0] — 2026-09-23
 
 - `skram-vault agent import-memory` promotes the durable half of Claude

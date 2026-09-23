@@ -86,59 +86,95 @@ there. Set Claude Code's *Project instructions* setting to
 
 ## From Claude Code's memory
 
-Claude Code keeps its own per-machine memory per checkout (its durable
-`feedback` and `reference` entries are exactly the kind of thing lore is
-for). `agent import-memory` finds it, reports what it would promote, and —
-on `--yes`, or a terminal "y" to the prompt — promotes it:
+Claude Code keeps its own per-machine memory per checkout. Some of it is
+durable — a rule, a gotcha, a pointer — and belongs in lore; some of it is a
+handoff note for the next session and does not. Which is which is an
+editorial call, made one memory at a time: the `metadata.type` label a
+memory carries was picked by whichever agent wrote it, so it is a hint,
+never a gate. `agent promote-memory` lists what is there and promotes
+exactly the memories you name:
 
 ```bash
-skram-vault agent import-memory                        # dry run: report only, write nothing
-skram-vault agent import-memory --here --yes           # promote the checkout you are in without asking
-skram-vault agent import-memory --here --yes --prune   # …and delete what it promoted
+skram-vault agent promote-memory                              # list every covered checkout's memories; never writes
+skram-vault agent promote-memory --here                       # list the checkout you are in
+skram-vault agent promote-memory --here --json                # the same listing as one JSON document
+skram-vault agent promote-memory --here some-trap some-rule   # dry run: what those two would promote
+skram-vault agent promote-memory --here --yes some-trap       # promote it without asking
+skram-vault agent promote-memory --here --yes --prune some-trap   # …and delete the memory file
 ```
 
-The default is a dry run: it prints exactly what it would promote and writes
-nothing. Standing at a terminal with no `--yes`, it then asks; an empty
-answer or "y"/"yes" writes, anything else does not. `--yes` writes without
-asking, terminal or not. Without `--yes`, only a terminal prompts: piped
-stdin writes nothing, and a run that cannot write does not sync the vault's
-remote either.
+**Listing.** Without names the command only reports, never writes, and
+never prompts. Each checkout shows its target namespace, its memory
+directory, and one row per memory file (every file but `MEMORY.md`, the
+memory's own index): the name, the type label, `IN LORE` — the
+`<namespace>/<id>` of a lore topic with exactly that id in any namespace,
+or `-` — and the summary. Frontmatter parsing is tolerant: when strict YAML
+fails (as it does on a memory whose unquoted `description:` contains
+`": "`, which is how Claude Code sometimes writes one), a line-based
+fallback still recovers the name, description and type. A file whose name
+still cannot be recovered gets a row marked unreadable, with its error.
+`--json` emits
+`{checkouts:[{root, repo, namespace, memory_dir, memories:[{name, file,
+type, summary, in_lore, similar, error}]}]}`, with `in_lore` and `error`
+`null` when there is nothing to say, and `similar` omitted when there is
+nothing similar.
+
+A memory whose id is not an exact lore topic but is close to one is hinted
+as similar: both ids are split on `-`, stop tokens (`the`, `a`, `an`,
+`and`, `of`, `to`, `in`) are dropped, and they are similar when they share
+at least 2 tokens and the shared tokens are at least half of the shorter
+id's tokens. `IN LORE` then shows the best match as
+`<namespace>/<id>?   (similar id)`; `--json` carries every match, best
+first and up to 3, as `similar: ["<namespace>/<id>", ...]`. It is
+informational only — naming a memory with a similar id still promotes it.
 
 Selection matches `install-rules`, worktrees included: a linked worktree
-resolves to its main checkout's memory, so the two are one import, visited
-once. The report lists, per checkout, what it would promote, what already
-conflicts with a topic of the same id, and what it would leave behind (a
-handoff note, an untyped entry, an invalid name, or an unreadable file whose
-frontmatter does not parse, listed with its error; none of these fails the
-run). Two memories that resolve to the same id in one run, from one
-checkout or two, promote the first and report the rest as conflicts.
-`--namespace` overrides the target namespace; `--memory-dir` overrides the
-memory lookup for one checkout, so it needs `--here`. `--json` emits the same report as one document, carrying the commit(s) once
-`--yes` (or an accepted prompt) has written.
+resolves to its main checkout's memory, so the two are one visit.
+`--namespace` overrides the target namespace (the first non-`shared` one the
+checkout's `repos:` entry lists); `--memory-dir` overrides the memory lookup
+for one checkout, so it needs `--here`.
 
-Every promoted memory of one run lands in one attributed vault commit per
-namespace the run touches — one commit for the whole run in the usual case,
-every visited checkout sharing a namespace; a sweep that spans several
-namespaces lands one commit per namespace instead. Run the same import on a
-second machine after `skram-vault sync`, and the two machines' memories meet
-in one namespace: a memory whose id is already a topic there is reported as
-a conflict and never written or merged, so the second import surfaces
-duplicates for you to merge by hand instead of silently overwriting them.
+**Promoting.** Names need `--here`: a name means something only inside one
+memory directory. A name matches a memory's `name:` field or its file's
+basename. A name that matches nothing, matches more than one file, or
+matches a file that cannot be read, and two names that would promote to the
+same topic id, fail the run before anything is written. `--yes` or
+`--prune` without names fails too:
 
-Memory files are left in place unless `--prune` is also passed: opt-in,
-never implied, and only meaningful together with a write, it deletes — once
-a namespace's commit succeeds — every memory file that commit promoted and
-that file's line in the memory directory's own index, MEMORY.md, leaving
-every other memory file and every other index line untouched. Without a
-write (a dry run, or a declined or piped prompt), `--prune` deletes nothing
-and the report lists what it would remove instead; a failed commit prunes
-nothing either. The report and `--json` both gain a `pruned` list.
+```
+Error: name the memories to promote; run without --yes to list them
+```
 
-`skram-vault doctor` adds a `[--]` note, per checkout, when its memory holds
-a typed `feedback` or `reference` entry not yet promoted to a topic in the
-target namespace, ending with the `agent import-memory --here` line to run.
-A checkout with no memory directory gets no note, and the note never changes
-`doctor`'s exit code — it is a pointer, not a problem.
+A named memory whose id is already a topic in any namespace is refused as
+`already in lore as <namespace>/<id>`, never overwritten or copied; a name
+that is not a valid flat topic id is refused as `invalid id`. Refusals do not
+stop the other names, and the run exits non-zero only when every name was
+refused.
+
+A named run is a dry run unless `--yes` is given. Standing at a terminal
+with no `--yes`, it asks; an empty answer or "y"/"yes" writes, anything else
+does not. Piped stdin writes nothing, and a run that cannot write does not
+sync the vault's remote either. What is promoted lands in one attributed
+vault commit, as a Skeleton topic whose summary is the memory's description
+and whose body is the memory's body plus a line naming the file it came
+from. With `--json` the report carries `promoted`, `refused` (as
+`{name, reason, existing}`), and the commit once written.
+
+Memory files are left in place unless `--prune` is also passed: opt-in and
+only meaningful with a write, it deletes — once the commit succeeds — every
+memory file that commit promoted and that file's line in `MEMORY.md`,
+leaving every other memory file and index line untouched. Without a write
+(a dry run, or a declined or piped prompt), `--prune` deletes nothing and
+the report lists what it would remove; a failed commit prunes nothing
+either.
+
+`agent import-memory`, the command's name in 0.6.0, still runs for one
+release: it prints `import-memory is now promote-memory` and then behaves
+exactly as `promote-memory`.
+
+`skram-vault doctor` prints no memory line: whether anything is worth
+promoting is an editorial call, and `promote-memory --here` is how you make
+it, not something doctor nags about.
 
 ## With Matt Pocock's skills
 
