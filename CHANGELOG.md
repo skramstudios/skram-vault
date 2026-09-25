@@ -5,6 +5,28 @@ Versions follow semver.
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-09-25
+
+- `skram-vault ticket set` can now change a ticket's spec, title, and
+  summary: `--spec S-2` sets the spec it serves, `--spec ""` clears it,
+  `--title` retitles it, and `--summary` rewrites (or with `""` clears) its
+  summary. `skram-vault spec set` gains `--title` and `--summary` too. The
+  `ticket_set` and `spec_set` MCP tools take the same fields (`spec` sets
+  it; `spec_set` with an empty `spec` clears it, like `blocked_by`). A spec
+  id that doesn't exist in the namespace is refused and nothing is written.
+  Retitling keeps the file name, so links to it keep working.
+- **Breaking:** `skram-vault ticket list` and the `ticket_list` MCP tool now
+  show open tickets by default, instead of every ticket ever filed. A
+  namespace with a long history of closed tickets used to return a huge
+  list; now you see the work that's left. Pass `--closed` (CLI) or
+  `include_closed` (MCP) to see closed tickets too, or ask for
+  `--status done` directly. `--frontier` and `--all` already only showed
+  open work, so they behave the same as before.
+- Each ticket in that list is now a shorter summary (id, status, title,
+  summary, spec, blockers, assignee, category) instead of the full record;
+  `ticket show` still gives you everything. `spec list` still shows specs
+  of every status, just without the file path on each one.
+
 ## [0.7.0] — 2026-09-23
 
 - **Breaking:** `skram-vault agent import-memory` is now

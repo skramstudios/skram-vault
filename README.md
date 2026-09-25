@@ -245,8 +245,8 @@ reads; any other keys you add pass through untouched.
 | `skram-vault lore write [ns] <topic>` | create or update a topic or one `--section` (body from `--file` or stdin) |
 | `skram-vault lore decide [ns] <title>` | append a dated decision to the namespace's decision log |
 | `skram-vault lore import <dir> --namespace ns` | migrate a `knowns.md`-style wiki into a namespace |
-| `skram-vault spec new\|list\|show\|set` | specs: `draft`, `ready`, `implemented`, `superseded` |
-| `skram-vault ticket new\|list\|show\|set\|close` | tickets; `list --frontier` shows open, unclaimed, unblocked work; `set --claim` claims one |
+| `skram-vault spec new\|list\|show\|set` | specs: `draft`, `ready`, `implemented`, `superseded`; `set --title`/`--summary` rewrites either one |
+| `skram-vault ticket new\|list\|show\|set\|close` | tickets; `list --frontier` shows open, unclaimed, unblocked work; `set --claim` claims one; `set --spec` sets the spec it serves (`--spec ""` clears it), and `--title`/`--summary` rewrite either one |
 | `skram-vault lint` | check every topic, spec, and index; exit 1 on problems |
 | `skram-vault regen` | rewrite the generated indexes |
 | `skram-vault sync` | `git pull --rebase` then push the vault's remote |

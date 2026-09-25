@@ -44,8 +44,8 @@ reported as an issue.
 | `lore_read` | one topic with its recent history |
 | `lore_write` | create a topic, or replace or append one section |
 | `lore_decide` | append a dated decision and its rationale to the decision log |
-| `spec_new`, `spec_list`, `spec_show`, `spec_set` | specs; present when `vault.specs` is set |
-| `ticket_new`, `ticket_list`, `ticket_show`, `ticket_set`, `ticket_close` | tickets; present when `vault.tickets` is set. `ticket_list` with `frontier` is the work that can start now; `ticket_set` with `claim` takes it |
+| `spec_new`, `spec_list`, `spec_show`, `spec_set` | specs; present when `vault.specs` is set. `spec_set` changes `status`, `superseded_by` (with `superseded_by_set`), `title`, `summary`, or one section |
+| `ticket_new`, `ticket_list`, `ticket_show`, `ticket_set`, `ticket_close` | tickets; present when `vault.tickets` is set. `ticket_list` defaults to open tickets only (`include_closed` or an explicit `status` reaches a closed one); with `frontier` it is the work that can start now; `ticket_set` with `claim` takes it. `ticket_set` also changes `status`, `spec` (`spec_set` with an empty `spec` clears it; an id that is not a spec in the namespace is refused), `title`, `summary`, and `blocked_by` in one commit |
 
 Resources: `skram://vault` (the root index), `skram://lore` and
 `skram://lore/<ns>` (topic indexes), `skram://lore/<ns>/<topic>`,

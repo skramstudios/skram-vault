@@ -148,7 +148,11 @@ skram-vault spec new my-app "Checkout rewrite"      # create one; prints the id 
 skram-vault spec list my-app                        # every spec here, with its status
 skram-vault spec show my-app S-1                    # the file, plus its recent history
 skram-vault spec set my-app S-1 --status ready      # move it along the statuses above
+skram-vault spec set my-app S-1 --title "Checkout v2" --summary "one line"
 ```
+
+Retitling a spec or a ticket changes its frontmatter and index line, never its
+file name: the id is the reference.
 
 ## Tickets
 
@@ -180,6 +184,10 @@ Statuses, in order: `needs-triage`, `needs-info`, `ready-for-agent`,
 `ready-for-human`, `in-progress`, `done`, `wontfix`. A ticket is open unless
 it is `done` or `wontfix`.
 
+`ticket list <namespace>` defaults to open tickets only; `--closed` widens
+that to every status, and an explicit `--status done` reaches a closed one on
+its own. `ticket_list`'s MCP equivalent is `include_closed`.
+
 **The frontier** is the list of tickets that can be started now: open,
 unclaimed, and every blocker closed. It is the one query an agent needs at the
 start of a session:
@@ -188,8 +196,11 @@ start of a session:
 skram-vault ticket list my-app --frontier            # this namespace
 skram-vault ticket list my-app --frontier --spec S-3 # one spec's own frontier
 skram-vault ticket list --all --frontier             # every namespace
+skram-vault ticket list my-app --closed              # every status, not just open
 skram-vault ticket show my-app T-1                   # the file, plus its recent history
 skram-vault ticket set my-app T-1 --claim            # first write of the session
+skram-vault ticket set my-app T-1 --spec S-2         # the spec it serves; --spec "" clears it
+skram-vault ticket set my-app T-1 --title "Server-side totals" --summary "one line"
 skram-vault ticket close my-app T-1 --resolution "totals computed in /cart, clients read them"
 ```
 
